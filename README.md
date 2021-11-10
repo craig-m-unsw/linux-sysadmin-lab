@@ -2,6 +2,8 @@
 
 A Linux VM Lab for learning and documentation. Living proof of concepts.
 
+## Layout
+
 The virtual machine names and purposes are:
 
 **consultant**
