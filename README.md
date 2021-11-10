@@ -5,14 +5,17 @@ A Linux VM Lab for learning and documentation. Living proof of concepts.
 The virtual machine names and purposes are:
 
 **consultant**
+
 IT consultant, Blue Team, incident responce box. Your safe 'laptop'.
 
 **Rand-Server 1 & 1**
+
 Random enterprise servers. A frontend, a backend DB.
 
 Are the misconfigurations really backdoors? What forensic material can be pulled from this machine.
 
 **attack**
+
 The Red Team / attack / Command and control / adversary machine.
 
 The threat to Rand Servers.
