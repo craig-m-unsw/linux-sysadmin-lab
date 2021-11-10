@@ -10,11 +10,11 @@ The virtual machine names and purposes are:
 
 IT consultant, Blue Team, incident responce box. Your safe 'laptop'.
 
-**Rand-Server 1 & 1**
+**Rand-Server 1 & 2**
 
-Random enterprise servers. A frontend, a backend DB.
+Two Random enterprise servers. A frontend, a backend DB. What Trade-off have the system administrators made for usability and security? 
 
-Are the misconfigurations really backdoors? What forensic material can be pulled from this machine.
+Are all the misconfigurations really backdoors? What forensic material can be pulled from this machine.
 
 **attack**
 
