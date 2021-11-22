@@ -27,8 +27,7 @@ The threat to Rand Servers.
 
 Get Vagrant and your Hypervisor going.
 
-Roboxes will be used for a base until specific Packer/Vagrant boxes are created.
-https://roboxes.org/
+Roboxes are used for a the base VM - https://roboxes.org/
 
 ```
 git clone https://github.com/craig-m-unsw/linux-sysadmin-lab.git
