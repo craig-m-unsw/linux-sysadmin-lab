@@ -1,10 +1,6 @@
 # Readme
 
-All exercise files in this folder should be named like:
+Learning tasks for the VM
 
-* task_attack_privesc.md
-* task_attack_nc_shells.md
-* task_defend_mem_forensics.md
-* task_defend_foo_bar.md
+* https://blog.danslimmon.com/2019/07/15/do-nothing-scripting-the-key-to-gradual-automation/
 
-Or some such.
