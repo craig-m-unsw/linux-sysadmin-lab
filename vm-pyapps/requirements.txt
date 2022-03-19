@@ -1,0 +1,5 @@
+parallel-ssh
+paramiko
+pyyaml
+pytest
+invoke

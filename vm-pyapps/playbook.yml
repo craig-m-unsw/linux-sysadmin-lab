@@ -1,0 +1,206 @@
+---
+
+
+- name: "Tasks for all machines"
+  hosts: all
+  gather_facts: yes
+  vars:
+    package_install: [
+      { add_item: 'curl' },
+      { add_item: 'wget' },
+      { add_item: 'lsof' },
+      { add_item: 'dos2unix' },
+      { add_item: 'tmux' },
+      { add_item: 'vim' },
+      { add_item: 'git' },
+      { add_item: 'make' },
+      { add_item: 'net-tools' },
+      { add_item: 'tcpdump' },
+      { add_item: 'socat' },
+      { add_item: 'expect' },
+      { add_item: 'sshfs' },
+      { add_item: 'acl' },
+      { add_item: 'python3-virtualenv' },
+      { add_item: 'python3-pip' }
+    ]
+    package_remove: [
+      { del_item: 'telnet' }
+    ]
+    create_folders: [
+      { dir: '/etc/ansible/facts.d/', mode: '0755', owner: 'root', group: 'root' },
+      { dir: '/opt/data/', mode: '0775', owner: 'root', group: 'vagrant' },
+      { dir: '/root/tmp/', mode: '0700', owner: 'root', group: 'root' },
+      { dir: '/mnt/sshfs/', mode: '0775', owner: 'root', group: 'root' }
+    ]
+  tasks:
+    - name: "checks and debug"
+      block:
+        - name: "OS check"
+          assert:
+            that:
+              - ansible_os_family == "Debian"
+              - ansible_architecture in ['x86_64', 'arm64']
+        - name: Display hostname
+          debug:
+            msg: "inventory_hostname {{ inventory_hostname }}"
+    - name: "system config"
+      block:
+        - name: "files and folders"
+          block:
+            - name: "create common folders"
+              ansible.builtin.file:
+                path: "{{ item.dir }}"
+                state: directory
+                mode: "{{ item.mode }}"
+                owner: "{{ item.owner }}"
+                group: "{{ item.group }}"
+              with_items: "{{ create_folders }}"
+      become: true
+    - name: "install software"
+      block:
+        - name: "install OS packages"
+          ansible.builtin.package:
+            name: "{{ item.add_item }}"
+            state: present
+          retries: 3
+          with_items: "{{ package_install }}"
+          become: true
+          tags:
+            - software
+        - name: "remove OS packages"
+          ansible.builtin.package:
+            name: "{{ item.del_item }}"
+            state: absent
+          with_items: "{{ package_remove }}"
+          become: true
+          tags:
+            - software
+    - name: "Cockpit Web UI"
+      block:
+        - name: "install cockpit"
+          ansible.builtin.package:
+            name: cockpit
+            state: present
+          tags:
+            - software
+        - name: "turn on cockpit socket"
+          service:
+            name: cockpit.socket
+            state: started
+            enabled: yes
+        - name: "Pause until web ui is up"
+          uri:
+            url: "http://localhost:9090/"
+            follow_redirects: none
+            method: GET
+          register: _result
+          until: _result.status == 200
+          retries: 30
+          delay: 5 # seconds
+      become: true
+    - name: "Finish up"
+      block:
+        - name: "script to run ansible"
+          ansible.builtin.copy:
+            dest: /home/vagrant/run-playbook.sh
+            mode: 0755
+            content: |
+              echo "running playbook.yml on localhost";
+              if [[ root = "$(whoami)" ]]; then
+                echo "Error: do not run as root";
+                exit 1;
+              fi
+              export ANSIBLE_PYTHON_INTERPRETER=/usr/bin/python3
+              ansible-playbook -v --connection=local -i "127.0.0.1," -- /vagrant/playbook.yml;
+        - name: "create readme"
+          ansible.builtin.copy:
+            dest: /home/vagrant/readme.txt
+            mode: 0644
+            content: |
+              # --- Dev VM details ---
+              # distro:   {{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}
+              # ansible:  {{ ansible_version }}
+              # python:   {{ ansible_playbook_python }}
+        - name: "debug note"
+          debug:
+            msg: "tasks for all hosts finished"
+
+
+- name: "the app vm"
+  hosts: all
+  tasks:
+    - name: "first vm"
+      block:
+        - name: "pyapp"
+          block:
+            - name: "install requirements"
+              pip:
+                requirements: /vagrant/requirements.txt
+                virtualenv: /home/vagrant/venv/
+                chdir: /home/vagrant/
+              become: true
+              become_method: sudo
+              become_user: vagrant
+              tags:
+                - software
+            - name: "ssh client config"
+              ansible.builtin.copy:
+                dest: "/home/vagrant/.ssh/config"
+                mode: 0600
+                owner: vagrant
+                group: vagrant
+                content: |
+                  # ssh client config
+                  #
+                  # ignore keys on local network
+                  Host 192.168.56.*
+                    StrictHostKeyChecking no
+                    UserKnownHostsFile=/dev/null
+            - name: "create private key"
+              ansible.builtin.copy:
+                dest: "/home/vagrant/.ssh/id_rsa"
+                mode: 0600
+                owner: vagrant
+                group: vagrant
+                content: |
+                  -----BEGIN OPENSSH PRIVATE KEY-----
+                  b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
+                  NhAAAAAwEAAQAAAYEAuWlG1NHp8w50/AEul4RK9UK38hGIHHAtbvsni9FZZEbESgq3NmRM
+                  S0soYM5aL6ORBRhfUqgaVYuqulF8cCadigyfvbRy4ZpTGI9kz7G9zGAq40eLyXbxH8Cu21
+                  IUuFDDfmqUVaErFDVHMzqgfHac1UnFQO6zJSSCdBitdBCb1RFXMBpX2NSoALF/pNJrVM0T
+                  QRWZQftlw4+2sKi8HjG1ZG2b2zVnkc8HCx+mD9CRknp/TXzsMlpAEk2l3GPGXuC/iOBAnk
+                  MIib7piveQGqIzIPs/+1bJxXfhl968ZTkQq/sB8i+Vvqj6DVxEce+UqcpDJO7R4qB9u0Sl
+                  /qy9mYKJPW/XwCuyPDQvW/BDS/6JjlftLRtRaRBK/GjT1axP/o/EsyEt+hqquVhRj/zI0n
+                  DhNESDlCt/Z5lt0EfB9X+sLfXlEmI8aq2OXK5GFGLFNSpogAa2H4WHatzDbYW0Ynjsg+ZF
+                  BsZgJxbDvfHVE/H6HbZx3NBH0sRHrJdf6xVzgWcRAAAFmKIP3x2iD98dAAAAB3NzaC1yc2
+                  EAAAGBALlpRtTR6fMOdPwBLpeESvVCt/IRiBxwLW77J4vRWWRGxEoKtzZkTEtLKGDOWi+j
+                  kQUYX1KoGlWLqrpRfHAmnYoMn720cuGaUxiPZM+xvcxgKuNHi8l28R/ArttSFLhQw35qlF
+                  WhKxQ1RzM6oHx2nNVJxUDusyUkgnQYrXQQm9URVzAaV9jUqACxf6TSa1TNE0EVmUH7ZcOP
+                  trCovB4xtWRtm9s1Z5HPBwsfpg/QkZJ6f0187DJaQBJNpdxjxl7gv4jgQJ5DCIm+6Yr3kB
+                  qiMyD7P/tWycV34ZfevGU5EKv7AfIvlb6o+g1cRHHvlKnKQyTu0eKgfbtEpf6svZmCiT1v
+                  18Arsjw0L1vwQ0v+iY5X7S0bUWkQSvxo09WsT/6PxLMhLfoaqrlYUY/8yNJw4TREg5Qrf2
+                  eZbdBHwfV/rC315RJiPGqtjlyuRhRixTUqaIAGth+Fh2rcw22FtGJ47IPmRQbGYCcWw73x
+                  1RPx+h22cdzQR9LER6yXX+sVc4FnEQAAAAMBAAEAAAGAC5f7p98gY+RpiECCq1LIZSGw4u
+                  AZxL12+dOWm3WRw2VxbLfS0QHgi2y9r5/3n7b4oHrvqvl7/BFpsZDa2SBxBWrYqkIYVOcT
+                  fxuoUBxrI9Z3mBKnOQfI+BVSWcB+LzBNqR/8+oXDbdYPB7MIyf+YuvWL8g17Aj2QMrZAUl
+                  ufguk8rHNZPuO9RZ3Tv3iw4XKZW56AINIZgOsBn3ZNnQ26q/b2ofRq74EkjZuDBMYj9CbY
+                  wv2mv1dJXlugnXFXvCMNe75Z3XPRqDMCPg2mfsP1BHT5J8ktYbBr4OJ9wUjZ5RVs9gZOb1
+                  9+/9q9zqeWWRNtngKw9JktCS1SudBKKl+ytRbsBRxMXNO3GbgBl8imhuDn+rCE/GZjOWtC
+                  pUor39QS+/zaZRTIqchflFa77oPdV3gUjtvYGsO8WAEaj0gMfu4Oa3ugx4z459KkpiDeea
+                  avtaviraMXbWgfkK8d2Wu8pww/4imChug67ZtBV4MJrg1NO0MVkmhVgw92gqFqV1hpAAAA
+                  wQCHZyKBgrfOAaB0yswUvt2IzXVVgHGmnuJD72MGPXqXv4iTZwjHcBtI3JBIVvRk5rsVn/
+                  uOv5zSEvFwUsDqwJDEhrw55bQ5r2UJHBjxFSuE+XuO5t0OPVerDxrzOb0oWzfC77qmkOhk
+                  m5QsHEe11lQahhSk7uinJtcsVntSfhDOp/xdWlNRNmARZEYDPefYZVm+XgkffjUXhYbuVy
+                  LoBjj5evox1WDEpDihRsYSb0NTWtaasSdSfmaIqeJz2lPnPA4AAADBAN9aM/HWs2Dz/dX4
+                  /N4+S/SvgjLqAniF7k5uwRzN+dAaA2ZUeeUneNTirvyNodg3f5xy3056loIe88NXvIqu3i
+                  /yzpEDF3W5ZQgOPBu0FcD5bz/NhaMsl2Hnv/4wz34n1nxaYUc1WEC5SLpSr2c+nOk+hKbu
+                  5GzxbROs0b+86hoPp6WRdHwYOqVd9AJLD0ogTOoJY+CZ562wViuC4q82PwnGCoPvSdWkkZ
+                  A2wIekBHnsHjzdgE5+D1whzZC/92ya0wAAAMEA1INTRr4ZL/9eFbQzwawBol0hz8aJZtHe
+                  NyxZgDpqEoUJU03mJVkgTvrqtGPCjP7q7IqBTaycPN98j9owvj/sOL2PXd2skkAS0+BSaj
+                  9QOVoQwWtNRv2WYUB64c0jrANNydcEjPc0U1Mch87QgFLigehiMc2ZcRvAiMpBRXcPGpyR
+                  CbxmR+4hUORYBQEPF5H01Rvo07y0kpjwJLuSEp1g9yIrXiVhgWAXE7tlVe6uez+wa1RN+5
+                  jPR0cfB0EPFkALAAAAHXozNTI4Mjk4QEwtRlZGWlEyWFJMWVdQLmxvY2FsAQIDBAU=
+                  -----END OPENSSH PRIVATE KEY-----
+    - name: "debug note"
+      debug:
+        msg: "tasks for pyapps finished"
