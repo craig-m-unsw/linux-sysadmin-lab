@@ -79,6 +79,10 @@ Vagrant.configure("2") do |config|
     config.vm.provision "ansible_local" do |ansible|
         ansible.galaxy_role_file = "/vagrant/requirements.yml"
         ansible.playbook = "/vagrant/playbook.yml"
+        ansible.groups = {
+            "compute" => ["ubnt2004a", "ubnt2004b"],
+            "pyapps"  => ["pyapps"]
+        }
         ansible.extra_vars = { ansible_python_interpreter: "/usr/bin/python3" }
         ansible.verbose = true
     end
