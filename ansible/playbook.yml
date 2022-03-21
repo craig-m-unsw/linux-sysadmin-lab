@@ -133,8 +133,8 @@
             - name: "install requirements"
               pip:
                 requirements: /home/vagrant/code/requirements.txt
-                virtualenv: /home/vagrant/code/venv/
-                chdir: /home/vagrant/code
+                virtualenv: /home/vagrant/venv/
+                chdir: /home/vagrant/
               become: true
               become_method: sudo
               become_user: vagrant

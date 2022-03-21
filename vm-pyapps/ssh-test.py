@@ -17,7 +17,7 @@ client = ParallelSSHClient(the_hosts, user='compute', pkey='/home/vagrant/.ssh/i
 
 if __name__ == '__main__':
     print("running command\n")
-    output = client.run_command('hostname; sleep 5; echo ok;')
+    output = client.run_command(the_cmd)
     for host_output in output:
         for line in host_output.stdout:
             print(line)
