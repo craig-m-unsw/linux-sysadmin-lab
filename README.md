@@ -12,7 +12,9 @@ Testing Parallel SSH.
 vagrant validate Vagrantfile
 vagrant up
 vagrant ssh pyapps
-source ~/venv/bin/activate
-cd /vagrant/
+source code/venv/bin/activate
+cd code
 time python3 ssh-test.py
 ```
+
+eof

@@ -37,11 +37,12 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
 
-    config.vm.box_check_update = false
     config.ssh.keep_alive = true
     config.ssh.compression = false
     config.ssh.forward_agent = false
     config.ssh.insert_key = true
+    config.vm.box_check_update = false
+    config.vm.synced_folder "./ansible/", "/vagrant", type: "rsync"
 
     servers.each do |machine|
         config.vm.define machine[:hostname] do |node|
@@ -52,9 +53,9 @@ Vagrant.configure("2") do |config|
             node.vm.network "private_network", ip: machine[:ip]
 
             if File.exist?(machine[:files]) == true
-                node.vm.synced_folder machine[:files], "/vagrant", type: "rsync"
+                node.vm.synced_folder machine[:files], "/home/vagrant/code", type: "rsync"
             else
-                node.vm.synced_folder '.', '/vagrant', type: "rsync", disabled: true
+                node.vm.synced_folder machine[:files], "/home/vagrant/code", type: "rsync", disabled: true
             end
 
             node.vm.provider "hyperv" do |hpv|
@@ -81,9 +82,11 @@ Vagrant.configure("2") do |config|
         ansible.playbook = "/vagrant/playbook.yml"
         ansible.groups = {
             "compute" => ["ubnt2004a", "ubnt2004b"],
-            "pyapps"  => ["pyapps"]
+            "pyappgroup"  => ["pyapps"]
         }
-        ansible.extra_vars = { ansible_python_interpreter: "/usr/bin/python3" }
+        ansible.extra_vars = { 
+            ansible_python_interpreter: "/usr/bin/python3"
+        }
         ansible.verbose = true
     end
 

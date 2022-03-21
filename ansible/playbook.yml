@@ -75,29 +75,6 @@
           become: true
           tags:
             - software
-    - name: "Cockpit Web UI"
-      block:
-        - name: "install cockpit"
-          ansible.builtin.package:
-            name: cockpit
-            state: present
-          tags:
-            - software
-        - name: "turn on cockpit socket"
-          service:
-            name: cockpit.socket
-            state: started
-            enabled: yes
-        - name: "Pause until web ui is up"
-          uri:
-            url: "http://localhost:9090/"
-            follow_redirects: none
-            method: GET
-          register: _result
-          until: _result.status == 200
-          retries: 30
-          delay: 5 # seconds
-      become: true
     - name: "Finish up"
       block:
         - name: "script to run ansible"
@@ -126,8 +103,28 @@
             msg: "tasks for all hosts finished"
 
 
-- name: "the app vm"
-  hosts: all
+- name: "other compute vms"
+  hosts: compute
+  tasks:
+    - name: "user account"
+      block:
+        - name: "create account"
+          ansible.builtin.user:
+            name: compute
+            shell: /bin/bash
+        - name: "add ssh key"
+          ansible.posix.authorized_key:
+            user: compute
+            state: present
+            key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5aUbU0enzDnT8AS6XhEr1QrfyEYgccC1u+yeL0VlkRsRKCrc2ZExLSyhgzlovo5EFGF9SqBpVi6q6UXxwJp2KDJ+9tHLhmlMYj2TPsb3MYCrjR4vJdvEfwK7bUhS4UMN+apRVoSsUNUczOqB8dpzVScVA7rMlJIJ0GK10EJvVEVcwGlfY1KgAsX+k0mtUzRNBFZlB+2XDj7awqLweMbVkbZvbNWeRzwcLH6YP0JGSen9NfOwyWkASTaXcY8Ze4L+I4ECeQwiJvumK95AaojMg+z/7VsnFd+GX3rxlORCr+wHyL5W+qPoNXERx75SpykMk7tHioH27RKX+rL2Zgok9b9fAK7I8NC9b8ENL/omOV+0tG1FpEEr8aNPVrE/+j8SzIS36Gqq5WFGP/MjScOE0RIOUK39nmW3QR8H1f6wt9eUSYjxqrY5crkYUYsU1KmiABrYfhYdq3MNthbRieOyD5kUGxmAnFsO98dUT8fodtnHc0EfSxEesl1/rFXOBZxE= user.local"
+      become: true
+    - name: "debug note"
+      debug:
+        msg: "tasks for ubnt2004* finished"
+
+
+- name: "the pyapp vm"
+  hosts: pyappgroup
   tasks:
     - name: "first vm"
       block:
@@ -135,9 +132,9 @@
           block:
             - name: "install requirements"
               pip:
-                requirements: /vagrant/requirements.txt
-                virtualenv: /home/vagrant/venv/
-                chdir: /home/vagrant/
+                requirements: /home/vagrant/code/requirements.txt
+                virtualenv: /home/vagrant/code/venv/
+                chdir: /home/vagrant/code
               become: true
               become_method: sudo
               become_user: vagrant
