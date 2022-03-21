@@ -16,4 +16,4 @@ source ~/venv/bin/activate
 time python3 code/ssh-test.py
 ```
 
-eof
+note: the ip in `ssh-test.py` will need updating on Hyper-V as no static IP can be set with that provider.

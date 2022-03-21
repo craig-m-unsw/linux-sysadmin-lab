@@ -59,6 +59,7 @@ Vagrant.configure("2") do |config|
             end
 
             node.vm.provider "hyperv" do |hpv|
+                # NOTE: no static IP on Hyper-V, the 'ip' setting will be ignored.
                 hpv.memory = machine[:ram]
                 hpv.cpus = machine[:cpu]
                 hpv.network "public_network", bridge: "Default Network"
