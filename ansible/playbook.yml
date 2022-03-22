@@ -107,6 +107,8 @@
               # distro:   {{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}
               # ansible:  {{ ansible_version }}
               # python:   {{ ansible_playbook_python }}
+              # ver:      {{ foo_vers }}
+              # vm_comment: {{ vm_comment }}
         - name: "debug note"
           debug:
             msg: "tasks for all hosts finished"

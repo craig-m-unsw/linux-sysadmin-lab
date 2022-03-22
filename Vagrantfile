@@ -1,25 +1,30 @@
 Vagrant.require_version ">= 2.2.18"
 
+
+#
+# VM config
+#
+
 servers = [
     {
-        :thebox => "generic/ubuntu2004",
         :hostname => "pyapps",
+        :thebox => "generic/ubuntu2004",
         :ip => "192.168.56.16",
         :files => "vm-pyapps",
         :ram => 512,
         :cpu => 1,
         :hport => 9590
     }, {
-        :thebox => "generic/ubuntu2004",
         :hostname => "ubnt2004a",
+        :thebox => "generic/ubuntu2004",
         :ip => "192.168.56.17",
         :files => "vm-compute",
         :ram => 512,
         :cpu => 1,
         :hport => 9591
     }, {
-        :thebox => "generic/ubuntu2004",
         :hostname => "ubnt2004b",
+        :thebox => "generic/ubuntu2004",
         :ip => "192.168.56.18",
         :files => "vm-compute",
         :ram => 512,
@@ -27,6 +32,28 @@ servers = [
         :hport => 9592
     }
 ]
+
+ANSIBLE_GROUPS = {
+    # group setup
+    "pyappgroup" => ["pyapps"],
+    "compute" => ["ubnt2004a", "ubnt2004b"],
+    # group vars
+    "pyappgroup:vars" => {
+        "vm_comment" => "main control node"
+    },
+    "compute:vars" => {
+        "vm_comment" => "worker/compute node"
+    }
+}
+
+ANSIBLE_VAREXT = {
+    ansible_python_interpreter: "/usr/bin/python3",
+    foo_vers: "v1.0 beta"
+}
+
+#
+# Vagrant starts (no config below here)
+#
 
 $inlinescript_post = <<-SCRIPT
 echo '-----------------------';
@@ -52,6 +79,7 @@ Vagrant.configure("2") do |config|
             node.vm.network :forwarded_port, guest: 9090, host_ip: '127.0.0.1', host: machine[:hport], protocol: "tcp"
             node.vm.network "private_network", ip: machine[:ip]
 
+            # if folder exists then upload
             if File.exist?(machine[:files]) == true
                 node.vm.synced_folder machine[:files], "/home/vagrant/code", type: "rsync"
             else
@@ -81,13 +109,8 @@ Vagrant.configure("2") do |config|
     config.vm.provision "ansible_local" do |ansible|
         ansible.galaxy_role_file = "/vagrant/requirements.yml"
         ansible.playbook = "/vagrant/playbook.yml"
-        ansible.groups = {
-            "compute" => ["ubnt2004a", "ubnt2004b"],
-            "pyappgroup"  => ["pyapps"]
-        }
-        ansible.extra_vars = { 
-            ansible_python_interpreter: "/usr/bin/python3"
-        }
+        ansible.groups = ANSIBLE_GROUPS
+        ansible.extra_vars = ANSIBLE_VAREXT
         ansible.verbose = true
     end
 
