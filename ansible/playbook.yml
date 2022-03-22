@@ -103,12 +103,14 @@
             dest: /home/vagrant/readme.txt
             mode: 0644
             content: |
-              # --- Dev VM details ---
-              # distro:   {{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}
-              # ansible:  {{ ansible_version }}
-              # python:   {{ ansible_playbook_python }}
-              # ver:      {{ foo_vers }}
-              # vm_comment: {{ vm_comment }}
+              # --- VM details ---
+              #
+              #  distro:      {{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}
+              #  ansible:     {{ ansible_version }}
+              #  python:      {{ ansible_playbook_python }}
+              #  ver:         {{ foo_vers }}
+              #  vm_comment:  {{ vm_comment }}
+              #
         - name: "debug note"
           debug:
             msg: "tasks for all hosts finished"
@@ -141,6 +143,14 @@
       block:
         - name: "pyapp"
           block:
+            - name: "write inventory file"
+              ansible.builtin.copy:
+                dest: "/home/vagrant/py_hosts.csv"
+                mode: 0600
+                owner: vagrant
+                group: vagrant
+                content: |
+                  {{ py_nodes }}
             - name: "install requirements"
               pip:
                 requirements: /home/vagrant/code/requirements.txt
@@ -161,7 +171,7 @@
                   # ssh client config
                   #
                   # ignore keys on local network
-                  Host 192.168.56.*
+                  Host {{ vm_range }}
                     StrictHostKeyChecking no
                     UserKnownHostsFile=/dev/null
             - name: "create private key"

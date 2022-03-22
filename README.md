@@ -2,7 +2,7 @@
 
 A VM test lab for learning.
 
-Requires [Vagrant](https://www.vagrantup.com/) and Hypervisor supported by [Roboxes](https://roboxes.org/).
+Requires [Vagrant](https://www.vagrantup.com/) and Hypervisor supported by [Roboxes](https://roboxes.org/), no other software on your host machine is required.
 
 ## using
 

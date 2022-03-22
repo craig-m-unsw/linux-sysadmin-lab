@@ -10,10 +10,13 @@ import socket
 from pssh.clients import ParallelSSHClient
 from pssh.config import HostConfig
 
+
 the_hosts = ['192.168.56.17', '192.168.56.18']
+
 the_cmd = "hostname; sleep 5; echo ok;"
 
 client = ParallelSSHClient(the_hosts, user='compute', pkey='/home/vagrant/.ssh/id_rsa')
+
 
 if __name__ == '__main__':
     print("running command\n")

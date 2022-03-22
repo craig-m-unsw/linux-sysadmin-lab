@@ -1,6 +1,5 @@
 Vagrant.require_version ">= 2.2.18"
 
-
 #
 # VM config
 #
@@ -34,21 +33,23 @@ servers = [
 ]
 
 ANSIBLE_GROUPS = {
-    # group setup
+    # set groups:
     "pyappgroup" => ["pyapps"],
     "compute" => ["ubnt2004a", "ubnt2004b"],
-    # group vars
+    # group vars:
     "pyappgroup:vars" => {
-        "vm_comment" => "main control node"
+        "vm_comment" => "main control node",
+        "py_nodes" => "192.168.17,192.168.18"
     },
     "compute:vars" => {
         "vm_comment" => "worker/compute node"
     }
 }
 
-ANSIBLE_VAREXT = {
+ANSIBLE_EXTRAVAR = {
     ansible_python_interpreter: "/usr/bin/python3",
-    foo_vers: "v1.0 beta"
+    foo_vers: "v1.0 beta",
+    vm_range: "192.168.56.*"
 }
 
 #
@@ -86,8 +87,8 @@ Vagrant.configure("2") do |config|
                 node.vm.synced_folder machine[:files], "/home/vagrant/code", type: "rsync", disabled: true
             end
 
+            # NOTE: no static IP on Hyper-V, the 'ip' setting will be ignored.
             node.vm.provider "hyperv" do |hpv|
-                # NOTE: no static IP on Hyper-V, the 'ip' setting will be ignored.
                 hpv.memory = machine[:ram]
                 hpv.cpus = machine[:cpu]
                 hpv.network "public_network", bridge: "Default Network"
@@ -107,10 +108,10 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.provision "ansible_local" do |ansible|
-        ansible.galaxy_role_file = "/vagrant/requirements.yml"
         ansible.playbook = "/vagrant/playbook.yml"
+        ansible.galaxy_role_file = "/vagrant/requirements.yml"
         ansible.groups = ANSIBLE_GROUPS
-        ansible.extra_vars = ANSIBLE_VAREXT
+        ansible.extra_vars = ANSIBLE_EXTRAVAR
         ansible.verbose = true
     end
 
@@ -120,3 +121,6 @@ Vagrant.configure("2") do |config|
     end
 
 end
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
