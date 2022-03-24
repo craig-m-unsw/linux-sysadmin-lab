@@ -1,45 +1,48 @@
 Vagrant.require_version ">= 2.2.18"
 
 #
-# VM config
+# virtual machine config
 #
 
 servers = [
     {
-        :hostname => "pyapps",
         :thebox => "generic/ubuntu2004",
+        :hostname => "pyapps",
         :ip => "192.168.56.16",
         :files => "vm-pyapps",
-        :ram => 512,
-        :cpu => 1,
+        :ram => 1024,
+        :cpu => 2,
+        :gport => 9090,
         :hport => 9590
     }, {
-        :hostname => "ubnt2004a",
         :thebox => "generic/ubuntu2004",
+        :hostname => "ubnt2004a",
         :ip => "192.168.56.17",
         :files => "vm-compute",
         :ram => 512,
         :cpu => 1,
+        :gport => 9090,
         :hport => 9591
     }, {
-        :hostname => "ubnt2004b",
         :thebox => "generic/ubuntu2004",
+        :hostname => "ubnt2004b",
         :ip => "192.168.56.18",
         :files => "vm-compute",
         :ram => 512,
         :cpu => 1,
+        :gport => 9090,
         :hport => 9592
     }
 ]
 
 ANSIBLE_GROUPS = {
-    # set groups:
+    # set groups of VM:
     "pyappgroup" => ["pyapps"],
     "compute" => ["ubnt2004a", "ubnt2004b"],
     # group vars:
     "pyappgroup:vars" => {
-        "vm_comment" => "main control node",
-        "py_nodes" => "192.168.17,192.168.18"
+        "vm_comment" => "main pyapp control node",
+        "py_nodes" => "192.168.56.17,192.168.56.18"
     },
     "compute:vars" => {
         "vm_comment" => "worker/compute node"
@@ -47,9 +50,9 @@ ANSIBLE_GROUPS = {
 }
 
 ANSIBLE_EXTRAVAR = {
-    ansible_python_interpreter: "/usr/bin/python3",
     foo_vers: "v1.0 beta",
-    vm_range: "192.168.56.*"
+    vm_range: "192.168.56.*",
+    ansible_python_interpreter: "/usr/bin/python3"
 }
 
 #
@@ -77,7 +80,7 @@ Vagrant.configure("2") do |config|
 
             node.vm.box = machine[:thebox]
             node.vm.hostname = machine[:hostname]
-            node.vm.network :forwarded_port, guest: 9090, host_ip: '127.0.0.1', host: machine[:hport], protocol: "tcp"
+            node.vm.network :forwarded_port, guest: machine[:gport], host_ip: '127.0.0.1', host: machine[:hport], protocol: "tcp"
             node.vm.network "private_network", ip: machine[:ip]
 
             # if folder exists then upload

@@ -19,7 +19,7 @@ sudo su
 
 Arp:
 
-```
+```shell
 # set a bogus arp address (for IPs in local subnet only)
 arp -s 192.168.56.16 00:00:00:00:00:01
 
@@ -29,7 +29,7 @@ arp -d 192.168.56.16
 
 Blackhole route:
 
-```
+```shell
 # null route a host
 ip route add blackhole 192.168.56.16/32
 
@@ -39,7 +39,7 @@ ip route delete 192.168.56.16/32
 
 Firewall:
 
-```
+```shell
 # iptables
 iptables -I INPUT -s 192.168.56.16 -j DROP
 iptables -I OUTPUT -d 192.168.56.16 -j DROP

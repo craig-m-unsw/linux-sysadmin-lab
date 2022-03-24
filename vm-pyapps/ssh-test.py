@@ -7,11 +7,13 @@ import socket
 import struct
 import platform
 import socket
+from csv import reader
 from pssh.clients import ParallelSSHClient
 from pssh.config import HostConfig
 
 
 the_hosts = ['192.168.56.17', '192.168.56.18']
+# todo: read /home/vagrant/py_hosts.csv
 
 the_cmd = "hostname; sleep 5; echo ok;"
 
