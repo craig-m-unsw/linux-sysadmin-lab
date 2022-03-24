@@ -6,6 +6,9 @@
   gather_facts: yes
   collections:
     - devsec.hardening
+  vars:
+    sysctl_overwrite:
+      net.ipv4.ip_forward: 1
   roles:
   - { role: devsec.hardening.os_hardening, become: yes }
 
@@ -116,26 +119,6 @@
             msg: "tasks for all hosts finished"
 
 
-- name: "other compute vms"
-  hosts: compute
-  tasks:
-    - name: "user account"
-      block:
-        - name: "create account"
-          ansible.builtin.user:
-            name: compute
-            shell: /bin/bash
-        - name: "add ssh key"
-          ansible.posix.authorized_key:
-            user: compute
-            state: present
-            key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5aUbU0enzDnT8AS6XhEr1QrfyEYgccC1u+yeL0VlkRsRKCrc2ZExLSyhgzlovo5EFGF9SqBpVi6q6UXxwJp2KDJ+9tHLhmlMYj2TPsb3MYCrjR4vJdvEfwK7bUhS4UMN+apRVoSsUNUczOqB8dpzVScVA7rMlJIJ0GK10EJvVEVcwGlfY1KgAsX+k0mtUzRNBFZlB+2XDj7awqLweMbVkbZvbNWeRzwcLH6YP0JGSen9NfOwyWkASTaXcY8Ze4L+I4ECeQwiJvumK95AaojMg+z/7VsnFd+GX3rxlORCr+wHyL5W+qPoNXERx75SpykMk7tHioH27RKX+rL2Zgok9b9fAK7I8NC9b8ENL/omOV+0tG1FpEEr8aNPVrE/+j8SzIS36Gqq5WFGP/MjScOE0RIOUK39nmW3QR8H1f6wt9eUSYjxqrY5crkYUYsU1KmiABrYfhYdq3MNthbRieOyD5kUGxmAnFsO98dUT8fodtnHc0EfSxEesl1/rFXOBZxE= user.local"
-      become: true
-    - name: "debug note"
-      debug:
-        msg: "tasks for ubnt2004* finished"
-
-
 - name: "the pyapp vm"
   hosts: pyappgroup
   tasks:
@@ -180,6 +163,7 @@
                 mode: 0600
                 owner: vagrant
                 group: vagrant
+                # do not use keys like this in production settings ;-)
                 content: |
                   -----BEGIN OPENSSH PRIVATE KEY-----
                   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
@@ -222,3 +206,23 @@
     - name: "debug note"
       debug:
         msg: "tasks for pyapps finished"
+
+
+- name: "other compute vms"
+  hosts: compute
+  tasks:
+    - name: "user account"
+      block:
+        - name: "create account"
+          ansible.builtin.user:
+            name: compute
+            shell: /bin/bash
+        - name: "add ssh key"
+          ansible.posix.authorized_key:
+            user: compute
+            state: present
+            key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5aUbU0enzDnT8AS6XhEr1QrfyEYgccC1u+yeL0VlkRsRKCrc2ZExLSyhgzlovo5EFGF9SqBpVi6q6UXxwJp2KDJ+9tHLhmlMYj2TPsb3MYCrjR4vJdvEfwK7bUhS4UMN+apRVoSsUNUczOqB8dpzVScVA7rMlJIJ0GK10EJvVEVcwGlfY1KgAsX+k0mtUzRNBFZlB+2XDj7awqLweMbVkbZvbNWeRzwcLH6YP0JGSen9NfOwyWkASTaXcY8Ze4L+I4ECeQwiJvumK95AaojMg+z/7VsnFd+GX3rxlORCr+wHyL5W+qPoNXERx75SpykMk7tHioH27RKX+rL2Zgok9b9fAK7I8NC9b8ENL/omOV+0tG1FpEEr8aNPVrE/+j8SzIS36Gqq5WFGP/MjScOE0RIOUK39nmW3QR8H1f6wt9eUSYjxqrY5crkYUYsU1KmiABrYfhYdq3MNthbRieOyD5kUGxmAnFsO98dUT8fodtnHc0EfSxEesl1/rFXOBZxE= user.local"
+      become: true
+    - name: "debug note"
+      debug:
+        msg: "tasks for ubnt2004* finished"
