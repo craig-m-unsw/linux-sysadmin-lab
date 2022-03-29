@@ -1,8 +1,8 @@
 ---
 collections:
-  # https://github.com/ansible-collections/ansible.posix
-  - name: ansible.posix
-    version: 1.3.0
-  # https://github.com/dev-sec/ansible-collection-hardening
-  - name: devsec.hardening
+  - name: https://github.com/ansible-collections/community.general
+    type: git
+    version: 4.6.1
+  - name: https://github.com/dev-sec/ansible-collection-hardening
+    type: git
     version: 7.14.1

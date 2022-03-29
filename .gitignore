@@ -1,5 +1,4 @@
-.vagrant
+.vagrant/
 *.log
-*.pyc
 *.iso
 *.DS_Store

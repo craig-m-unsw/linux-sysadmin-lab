@@ -12,12 +12,12 @@ from pssh.clients import ParallelSSHClient
 from pssh.config import HostConfig
 
 
-the_hosts = ['192.168.56.17', '192.168.56.18']
-# todo: read /home/vagrant/py_hosts.csv
+the_hosts = ['192.168.60.11', '192.168.60.12', '192.168.60.13']
+# todo: read /vagrant/inventory-ansible.yml
 
 the_cmd = "hostname; sleep 5; echo ok;"
 
-client = ParallelSSHClient(the_hosts, user='compute', pkey='/home/vagrant/.ssh/id_rsa')
+client = ParallelSSHClient(the_hosts, user='compute', pkey='/vagrant/id_rsa')
 
 
 if __name__ == '__main__':

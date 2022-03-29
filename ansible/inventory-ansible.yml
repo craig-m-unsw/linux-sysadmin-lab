@@ -1,0 +1,30 @@
+---
+all:
+  children:
+    ansiblebox:
+      hosts:
+        controller:
+          ansible_connection: local
+          vm_comment: "Ansible control machine"
+          files: "ansible"
+    compute:
+      hosts:
+        vm001:
+          ansible_host: 192.168.60.11
+          ansible_ssh_private_key_file: /vagrant/id_rsa
+          ansible_user: vagrant
+          vm_comment: "VM compute node"
+          files: "compute"
+        vm002:
+          ansible_host: 192.168.60.12
+          ansible_ssh_private_key_file: /vagrant/id_rsa
+          ansible_user: vagrant
+          vm_comment: "VM compute node"
+          files: "compute"
+        vm003:
+          ansible_host: 192.168.60.13
+          ansible_ssh_private_key_file: /vagrant/id_rsa
+          ansible_user: vagrant
+          vm_comment: "VM compute node"
+          files: "compute"
+    ungrouped: {}
