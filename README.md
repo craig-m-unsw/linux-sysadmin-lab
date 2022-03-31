@@ -28,7 +28,7 @@ Login to the controller VM and run ansible.
 
 ```shell
 vagrant ssh controller
-cd /vagrant
-ansible-galaxy install --role-file=requirements.yml --roles-path='/vagrant/roles' --force
+cd /vagrant/
+ansible-galaxy install --role-file="/vagrant/requirements.yml" --roles-path="/vagrant/roles" --force
 ansible-playbook -i inventory-ansible.yml playbook.yml
 ```

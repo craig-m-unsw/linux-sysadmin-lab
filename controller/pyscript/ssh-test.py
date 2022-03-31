@@ -12,7 +12,7 @@ from pssh.clients import ParallelSSHClient
 from pssh.config import HostConfig
 
 
-the_hosts = ['192.168.60.11', '192.168.60.12', '192.168.60.13']
+the_hosts = ['192.168.60.11', '192.168.60.12']
 # todo: read /vagrant/inventory-ansible.yml
 
 the_cmd = "hostname; sleep 5; echo ok;"

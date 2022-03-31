@@ -1,4 +1,5 @@
 .vagrant/
+localdata/
 *.log
 *.iso
 *.DS_Store

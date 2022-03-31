@@ -1,6 +1,5 @@
 ---
 
-
 - name: "hardening tasks"
   hosts: all
   gather_facts: yes
@@ -11,6 +10,7 @@
       net.ipv4.ip_forward: 1
   roles:
   - { role: devsec.hardening.os_hardening, become: yes }
+
 
 
 - name: "Tasks for all machines"

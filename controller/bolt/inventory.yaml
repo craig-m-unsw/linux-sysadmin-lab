@@ -1,0 +1,12 @@
+groups:
+  - name: servers1
+    targets:
+      - 192.168.60.11
+      - 192.168.60.12
+    config:
+      transport: ssh
+      ssh:
+        user: vagrant
+        #password: vagrant
+        private-key: "/vagrant/id_rsa"
+        host-key-check: false
