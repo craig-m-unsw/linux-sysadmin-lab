@@ -2,9 +2,9 @@
 
 Virtual Machine Lab for learning.
 
-Brings up a number of "compute" machines (`vm001`, `vm002`, `vm003`... etc), as many as you have RAM for. Then starts a VM to act as an Ansible control machine, and from here run playbooks against the other VM (over SSH on an internal network).
+Brings up a number of "compute" machines (`vm001`, `vm002`, etc), as many as you have RAM for, then starts a VM to act as an Ansible / puppet-bolt / python-script control machine.
 
-Add hosts to `inventory-vagrant.yml` and `inventory-ansible.yml`.
+Set hosts in `inventory-vagrant.yml` and `inventory-ansible.yml`.
 
 ## setup
 
@@ -28,7 +28,7 @@ Login to the controller VM and run ansible.
 
 ```shell
 vagrant ssh controller
-cd /vagrant/
-ansible-galaxy install --role-file="/vagrant/requirements.yml" --roles-path="/vagrant/roles" --force
+cd /vagrant/ansible
+ansible-galaxy install --role-file="/vagrant/ansible/requirements.yml" --roles-path="/vagrant/ansible/roles" --force
 ansible-playbook -i inventory-ansible.yml playbook.yml
 ```

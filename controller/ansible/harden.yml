@@ -1,0 +1,13 @@
+---
+
+- name: "hardening tasks"
+  hosts: all
+  gather_facts: yes
+  collections:
+    - devsec.hardening
+  vars:
+    sysctl_overwrite:
+      net.ipv4.ip_forward: 1
+  roles:
+  - { role: devsec.hardening.os_hardening, become: yes }
+

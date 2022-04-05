@@ -1,5 +1,5 @@
 ---
 name: vmlab
-format: rainbow
+format: human
 modules: []
 color: false

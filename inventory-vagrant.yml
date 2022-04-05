@@ -2,7 +2,7 @@
 
 - hostname: "vm001"
   ip: "192.168.60.11"
-  thebox: "generic/ubuntu2004"
+  thebox: "generic/rocky8"
   files: "compute"
   ram: 512
   cpu: 1
@@ -11,16 +11,17 @@
 
 - hostname: "vm002"
   ip: "192.168.60.12"
-  thebox: "generic/ubuntu2004"
+  thebox: "generic/rocky8"
   files: "compute"
   ram: 512
   cpu: 1
   hport: 9092
   gport: 9090
 
+# admin VM
 - hostname: "controller"
   ip: "192.168.60.10"
-  thebox: "generic/ubuntu2004"
+  thebox: "generic/rocky8"
   files: "controller"
   ram: 1024
   cpu: 2

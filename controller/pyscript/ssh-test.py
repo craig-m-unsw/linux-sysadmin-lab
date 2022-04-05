@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# time python3 ssh-test.py
-
 import ipaddress
 import socket
 import struct
@@ -17,7 +15,7 @@ the_hosts = ['192.168.60.11', '192.168.60.12']
 
 the_cmd = "hostname; sleep 5; echo ok;"
 
-client = ParallelSSHClient(the_hosts, user='compute', pkey='/vagrant/id_rsa')
+client = ParallelSSHClient(the_hosts, user='vagrant', pkey='/vagrant/id_rsa')
 
 
 if __name__ == '__main__':

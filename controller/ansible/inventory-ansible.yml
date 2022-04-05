@@ -5,7 +5,7 @@ all:
       hosts:
         controller:
           ansible_connection: local
-          vm_comment: "Ansible control machine"
+          vm_comment: "Controller admin VM"
           files: "controller"
     compute:
       hosts:

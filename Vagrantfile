@@ -10,12 +10,20 @@ indebug="false"
 
 if indebug == "true" then puts "* vagrant starting" end
 
-# provision ansible controller
+# provision ansible controller (apt or yum)
 $controller_script = <<-SCRIPT
-apt update
-apt install software-properties-common -y -q
-add-apt-repository --yes --update ppa:ansible/ansible
-apt install ansible -y -q
+if [ -f /etc/debian-version ]; then
+    echo "setup on Debian OS"
+    apt update
+    apt install software-properties-common -y -q
+    add-apt-repository --yes --update ppa:ansible/ansible
+    apt install ansible -y -q
+fi
+if [ -f /etc/redhat-release ]; then
+    echo "setup on RHEL OS"
+    yum install epel-release -y
+    yum install ansible -y
+fi
 SCRIPT
 
 # provision node VM
