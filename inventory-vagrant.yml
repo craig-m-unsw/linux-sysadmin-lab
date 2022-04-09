@@ -8,6 +8,7 @@
   cpu: 1
   hport: 9091
   gport: 9090
+  comtest: "worker_node_001"
 
 - hostname: "vm002"
   ip: "192.168.60.12"
@@ -17,6 +18,7 @@
   cpu: 1
   hport: 9092
   gport: 9090
+  comtest: "worker_node_002"
 
 # admin VM
 - hostname: "controller"
@@ -27,3 +29,4 @@
   cpu: 2
   hport: 9089
   gport: 9090
+  comtest: "admin_controller"

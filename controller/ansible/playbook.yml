@@ -17,7 +17,6 @@
       { add_item: 'tcpdump' },
       { add_item: 'socat' },
       { add_item: 'expect' },
-      { add_item: 'sshfs' },
       { add_item: 'acl' },
       { add_item: 'ca-certificates' },
       { add_item: 'python3-virtualenv' },

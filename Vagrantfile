@@ -6,12 +6,13 @@ require 'yaml'
 servers = YAML.load_file(File.join(File.dirname(__FILE__), 'inventory-vagrant.yml'))
 
 # debug mode: true/false
-indebug="false"
+indebug="true"
 
 if indebug == "true" then puts "* vagrant starting" end
 
 # provision ansible controller (apt or yum)
 $controller_script = <<-SCRIPT
+echo "run on: $1";
 if [ -f /etc/debian-version ]; then
     echo "setup on Debian OS"
     apt update
@@ -24,11 +25,12 @@ if [ -f /etc/redhat-release ]; then
     yum install epel-release -y
     yum install ansible -y
 fi
+logger "vagrant provision script ran"
 SCRIPT
 
 # provision node VM
 $compute_node_script = <<-SCRIPT
-logger "compute node provision"
+echo "run on: $1";
 if [ ! -f /etc/ansible/facts.d/workers.fact ]; then
     echo "setup host"
     mkdir -pv /etc/ansible/facts.d/
@@ -36,6 +38,7 @@ if [ ! -f /etc/ansible/facts.d/workers.fact ]; then
     # add key for ansible
     echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/CRSXXVk82rJmbZGmMiiqFXwy8PARyhr/9GhWVt61BRcJlx2kL1gJpISqXmvNKnpjb8l/Sprf1Imeevuz56KX3nRbgWd9f+qaUuBYqwe9EBW7kQFHncChoMhScD97LWQvECH+dXuESWxxQm6ZuNifKmT5xFlZZm+sjJ+KQX8JSPxDzgC5fHuPwtPAXLbVEigo800gX4w15uJoVYelJJy0maTnkJBDXzlpJSVE9PZAhK3M8MrmsmCv6K4LhIyXs4hisaNHU6m0pKT0l1Stt9ZEiOzylOAtBY2Gffzp74E1j6YAJOCbftwZr366PSKClHwpmQA/ZxABdsyHBA7fahi5BaZtijWm9FHsirdxnZUWXGFTHIrSp8dqYCydcndLJ6xG08AIcRJsBgwMErBn8ilBaXpkwdnH8ChB1w4bzXLn739JRcqct7VJ61DL6jB+q4VMzTCuZ/Iksfo73rEMYbgZMTnIn35RJRkPUQXVbulJ6MXuLkI4gbcHHMDn7G3NdL0= user@host.local" >> /home/vagrant/.ssh/authorized_keys
 fi
+logger "vagrant provision script ran"
 SCRIPT
 
 $inlinescript_post = <<-SCRIPT
@@ -57,13 +60,17 @@ Vagrant.configure("2") do |config|
         config.vm.define machine["hostname"] do |node|
 
             if indebug == "true" then 
-                puts "------------"
-                puts "ip: #{machine["ip"]} host: #{machine["hostname"]}"
+                puts "------------------------"
+                puts "ip: #{machine["ip"]}\tports: #{machine["hport"]}:#{machine["gport"]}\thost: #{machine["hostname"]}"
             end
 
             node.vm.box = machine["thebox"]
             node.vm.hostname = machine["hostname"]
-            node.vm.network :forwarded_port, guest: machine["gport"], host_ip: '127.0.0.1', host: machine["hport"], protocol: "tcp"
+            node.vm.network :forwarded_port,
+                guest: machine["gport"],
+                host_ip: '127.0.0.1',
+                host: machine["hport"],
+                protocol: "tcp"
             node.vm.network "private_network", ip: machine["ip"]
 
             # NOTE: no static IP on Hyper-V, platform limitation, so this will prob all break
@@ -84,35 +91,54 @@ Vagrant.configure("2") do |config|
             end
 
             if (machine["hostname"]) == "controller"
-                # ansible controller VM
-                if indebug == "true" then puts "type: ansible controller" end
-                node.vm.synced_folder machine["files"], "/vagrant", type: "rsync", disabled: false
+
+                # -- ansible controller VM --
+                if indebug == "true" then puts "type: controller" end
+                
+                node.vm.synced_folder machine["files"], "/vagrant",
+                    type: "rsync",
+                    disabled: false
+
                 node.vm.provision :shell,
                     name: "ansible controller script",
                     inline: $controller_script,
+                    :args => machine["comtest"],
                     :privileged => true
+
             else
-                # compute node VM
+
+                # -- compute node VM --
                 if indebug == "true" then puts "type: compute" end
+                
                 if File.exist?(machine["files"]) == true
-                    node.vm.synced_folder machine["files"], "/vagrant", type: "rsync", disabled: false
+                    node.vm.synced_folder machine["files"], "/vagrant",
+                        type: "rsync",
+                        disabled: false
                 else
-                    node.vm.synced_folder machine["files"], "/vagrant", type: "rsync", disabled: true
+                    node.vm.synced_folder machine["files"], "/vagrant",
+                        type: "rsync",
+                        disabled: true
                 end
+
                 node.vm.provision :shell,
                     name: "user setup script",
                     inline: $compute_node_script,
+                    :args => machine["comtest"],
                     :privileged => true
+
             end
 
-            if indebug == "true" then puts "------------" end
+            if indebug == "true" then puts "------------------------" end
 
         end
     end
 
     config.trigger.after [:up, :resume, :reload] do |t|
         t.info = "running inlinescript_post"
-        t.run_remote = { inline: $inlinescript_post, :privileged => false }
+        t.run_remote = {
+            inline: $inlinescript_post,
+            :privileged => false
+        }
     end
 
 end
